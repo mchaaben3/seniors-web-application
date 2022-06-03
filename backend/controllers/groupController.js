@@ -88,8 +88,10 @@ exports.addMember = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
+
+
 //remove member from group
-exports.removeMember = catchAsyncErrors(async (req, res, next) => {
+exports.deleteMember = catchAsyncErrors(async (req, res, next) => {
   const group = await Group.findById(req.params.id);
   const user = await User.findById(req.params.userId);
   if (!group) {
@@ -107,7 +109,7 @@ exports.removeMember = catchAsyncErrors(async (req, res, next) => {
 });
 
 //create  post in group
-exports.createPost = catchAsyncErrors(async (req, res, next) => {
+exports.addPost = catchAsyncErrors(async (req, res, next) => {
     const group = await Group.findById(req.params.id);
     if (!group) {
         return next(new ErrorHandler("Group not found", 404));
@@ -123,7 +125,7 @@ exports.createPost = catchAsyncErrors(async (req, res, next) => {
     });
 
 //get all posts in group
-exports.getAllPosts = catchAsyncErrors(async (req, res, next) => {
+exports.getGroupPosts = catchAsyncErrors(async (req, res, next) => {
     const group = await Group.findById(req.params.id);
     if (!group) {
         return next(new ErrorHandler("Group not found", 404));
@@ -135,3 +137,26 @@ exports.getAllPosts = catchAsyncErrors(async (req, res, next) => {
     });
     });
 
+    //delete post from group
+    exports.deletePost = catchAsyncErrors(async (req, res, next) => {
+        const post = await Post.findById(req.params.postId);
+        const group = await Group.findById(req.params.id);
+        if (!group) {
+            return next(new ErrorHandler("Group not found", 404));
+        }
+        if (!post) {
+            return next(new ErrorHandler("Post not found", 404));
+        }
+        if (post.user.toString() !== req.user.id) {
+            return next(
+                new ErrorHandler("You are not authorized to delete this post", 403)
+            );
+        }
+        group.posts.pull(post);
+        await group.save();
+        await post.remove();
+        res.status(200).json({
+            success: true,
+            group,
+        });
+    });

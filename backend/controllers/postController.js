@@ -74,7 +74,7 @@ exports.deletePost = catchAsyncErrors(async (req, res, next) => {
 });
 
 exports.getAllPostsByUser = catchAsyncErrors(async (req, res, next) => {
-    const posts = await Post.find({ user: req.params.id });
+    const posts = await Post.find({ user: req.params.id, category:'general' });
     const postCount = await Post.countDocuments({ user: req.params.id });
     if (!posts) {
         return next(new ErrorHandler("Post not found", 404));
@@ -152,7 +152,7 @@ exports.addComment = catchAsyncErrors(async (req, res, next) => {
     });
 
     exports.getAllPosts = catchAsyncErrors(async (req, res, next) => {
-        const posts = await Post.find();
+        const posts = await Post.find({category:'general'});
         if (!posts) {
             return next(new ErrorHandler("No posts yet !", 404));
         }
